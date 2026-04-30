@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import mongoose from "mongoose";
 import authRoutes from "./routes/authRoutes.js";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ const app = express();
 // middlewares
 app.use(cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use("/api/auth", authRoutes);
 
 // ruta de prueba
