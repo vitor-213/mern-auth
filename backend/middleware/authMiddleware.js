@@ -3,26 +3,36 @@ import User from "../models/User.js";
 
 const protect = async (req, res, next) => {
   try {
-    const token = req.cookies.token;
+    const token = req.cookies?.token;
 
     if (!token) {
-      return res.status(401).json({ message: "No autorizado, sin token" });
+      return res.status(401).json({ message: "No autorizado" });
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // 🔥 aquí traes el usuario completo
     const user = await User.findById(decoded.id).select("-password");
 
     if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
+      return res.status(401).json({ message: "No autorizado" });
     }
 
-    req.user = user; // ahora es objeto completo
+    // 🔐 opcional: invalidar token si cambió password
+    if (user.passwordChangedAt) {
+      const changedTime = parseInt(user.passwordChangedAt.getTime() / 1000, 10);
+
+      if (decoded.iat < changedTime) {
+        return res
+          .status(401)
+          .json({ message: "Token expirado por cambio de password" });
+      }
+    }
+
+    req.user = user;
 
     next();
   } catch (error) {
-    return res.status(401).json({ message: "Token inválido" });
+    return res.status(401).json({ message: "No autorizado" });
   }
 };
 

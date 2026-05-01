@@ -15,9 +15,16 @@ mongoose
 const app = express();
 
 // middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // 🔥 tu frontend
+    credentials: true, // 🔥 permite cookies
+  }),
+);
 app.use(express.json());
 app.use(cookieParser());
+
+// rutas
 app.use("/api/auth", authRoutes);
 
 // ruta de prueba
